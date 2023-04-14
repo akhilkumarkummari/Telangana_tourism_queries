@@ -1,0 +1,135 @@
+1) List down the top 10 districts that have the highest number of domestic visitors overall (2016-2019)?
+
+code:- 
+SELECT district, SUM(visitors) AS total_visitors
+FROM tourism_project.domestic_visitors
+WHERE year BETWEEN 2016 AND 2019
+GROUP BY district
+ORDER BY total_visitors DESC
+LIMIT 10;
+
+2) List down the top 3 districts based on compounded annual growth rate (CAGR) of visitors between (2016-2019)?
+
+code:- 
+SELECT 
+  district,
+  SUM(CASE WHEN year = '2016' THEN visitors ELSE 0 END) AS start_values,
+  SUM(CASE WHEN year = '2019' THEN visitors ELSE 0 END) AS end_values,
+  POWER((SUM(CASE WHEN year = '2019' THEN visitors ELSE 0 END)/
+         SUM(CASE WHEN year = '2016' THEN visitors ELSE 0 END)), 1/3) - 1 AS CAGR
+FROM tourism_project.domestic_visitors
+GROUP BY district
+ORDER BY CAGR DESC
+LIMIT 3;
+
+3) List down the bottom 3 districts based on compounded annual growth rate (CAGR) of visitors between (2016-2019)? (Insight: Districts that are declining)
+
+code: -
+SELECT 
+  district,
+  SUM(CASE WHEN year = '2016' THEN visitors ELSE 0 END) AS start_values,
+  SUM(CASE WHEN year = '2019' THEN visitors ELSE 0 END) AS end_values,
+  POWER((SUM(CASE WHEN year = '2019' THEN visitors ELSE 0 END)/
+         SUM(CASE WHEN year = '2016' THEN visitors ELSE 0 END)), 1/3) - 1 AS CAGR
+FROM tourism_project.domestic_visitors
+GROUP BY district
+ORDER BY CAGR ASC
+LIMIT 3;
+
+4) What are the peak and low season months for Hyderabad based on the data from 2016 to 2019 for Hyderabad district?
+
+SELECT 
+  year,
+  month,
+  SUM(visitors) AS total_visitors
+FROM 
+  tourism_project.domestic_visitors
+WHERE 
+  district = 'Hyderabad'
+  GROUP BY 
+  month
+ORDER BY 
+  total_visitors DESC
+  limit 5;
+  
+5) Show the top & bottom 3 districts with high domestic to foreign tourist ratio? (Insight: Government can learn from top districts and replicate the same to bottom districts which can improve the foreign visitors as foreign visitors will bring more revenue)
+
+code: -
+SELECT d.district,
+sum(d.visitors) as total_domestic,
+concat(ROUND((SUM(d.visitors) / (SUM(d.visitors) + SUM(f.visitors))) * 100, 2),
+        '% domestic, ',
+ROUND((SUM(f.visitors) / (SUM(d.visitors) + SUM(f.visitors))) * 100, 2),
+        '% foreign'
+    ) AS percentage,
+sum(f.visitors) as total_foreign,
+round(sum(d.visitors)/sum(f.visitors),2) as ratio
+FROM 
+  tourism_project.domestic_visitors as d
+JOIN tourism_project.foreign_visitors as f ON
+d.district	= f.district
+group by d. district
+order by ratio DESC
+limit 3;
+
+b. SELECT d.district,
+sum(d.visitors) as total_domestic,
+concat(ROUND((SUM(d.visitors) / (SUM(d.visitors) + SUM(f.visitors))) * 100, 2),
+        '% domestic, ',
+ROUND((SUM(f.visitors) / (SUM(d.visitors) + SUM(f.visitors))) * 100, 2),
+        '% foreign'
+    ) AS percentage,
+sum(f.visitors) as total_foreign,
+round(sum(d.visitors)/sum(f.visitors),2) as ratio
+FROM 
+  tourism_project.domestic_visitors as d
+JOIN tourism_project.foreign_visitors as f ON
+d.district	= f.district
+group by d. district
+order by ratio ASC
+limit 3;
+
+5) List the top & bottom 5 districts based on 'population to tourist footfall ratio" ratio in 2019?
+
+code: -
+
+SELECT 
+    dm.district,d.year,
+    SUM(d.visitors + f.visitors) as Total_visitors,
+    SUM(dm.Total) AS Total_population,
+    SUM(d.visitors + f.visitors) / SUM(dm.Total) AS ratio
+FROM 
+    tourism_project.domestic_visitors AS d 
+    LEFT JOIN tourism_project.foreign_visitors AS f 
+        ON d.district = f.district
+    LEFT JOIN tourism_project.demographics AS dm 
+        ON d.district = dm.district        
+WHERE 
+    d.year = '2019' AND f.year = '2019'
+GROUP BY 
+    dm.district
+ORDER BY 
+    ratio DESC
+    LIMIT 5;
+    
+    b. SELECT 
+    dm.district,d.year,
+    SUM(d.visitors + f.visitors) as Total_visitors,
+    SUM(dm.Total) AS Total_population,
+    SUM(d.visitors + f.visitors) / SUM(dm.Total) AS ratio
+FROM 
+    tourism_project.domestic_visitors AS d 
+    LEFT JOIN tourism_project.foreign_visitors AS f 
+        ON d.district = f.district
+    LEFT JOIN tourism_project.demographics AS dm 
+        ON d.district = dm.district        
+WHERE 
+    d.year = '2019' AND f.year = '2019'
+GROUP BY 
+    dm.district
+ORDER BY 
+    ratio ASC
+    LIMIT 5;
+   
+  
+
